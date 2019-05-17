@@ -1,0 +1,91 @@
+diff --git a/net/socket/tcp_client_socket.h b/net/socket/tcp_client_socket.h
+index 8b6aa30dae00..64cd4a441539 100644
+--- a/net/socket/tcp_client_socket.h
++++ b/net/socket/tcp_client_socket.h
+@@ -87,6 +87,8 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket {
+                   int buf_len,
+                   CompletionOnceCallback callback) override;
+   int CancelReadIfReady() override;
++  int _DoWrite(char* data, int buf_len);
++  int DoWrite(IOBuffer* buf, int buf_len); 
+   int Write(IOBuffer* buf,
+             int buf_len,
+             CompletionOnceCallback callback,
+diff --git a/net/socket/tcp_socket_win.cc b/net/socket/tcp_socket_win.cc
+index 3e6ecb8e9c6e..6e62f3eda803 100644
+--- a/net/socket/tcp_socket_win.cc
++++ b/net/socket/tcp_socket_win.cc
+@@ -546,6 +546,54 @@ int TCPSocketWin::CancelReadIfReady() {
+   return net::OK;
+ }
+ 
++int TCPSocketWin::_DoWrite(char* data, int buf_len) {
++  WSABUF write_buffer;
++  write_buffer.len = buf_len;
++  write_buffer.buf = data;
++  AssertEventNotSignaled(core_->write_overlapped_.hEvent);
++  DWORD num;
++  int rv = WSASend(socket_, &write_buffer, 1, &num, 0,
++                   &core_->write_overlapped_, nullptr);
++  int os_error = WSAGetLastError();
++  if (rv == 0) {
++    if (ResetEventIfSignaled(core_->write_overlapped_.hEvent)) {
++      rv = static_cast<int>(num);
++      if (rv > buf_len || rv < 0) {
++        // It seems that some winsock interceptors report that more was written
++        // than was available. Treat this as an error.  http://crbug.com/27870
++        LOG(ERROR) << "Detected broken LSP: Asked to write " << buf_len
++                   << " bytes, but " << rv << " bytes reported.";
++        return ERR_WINSOCK_UNEXPECTED_WRITTEN_BYTES;
++      }
++      net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_SENT, rv,
++                                    buf->data());
++      NetworkActivityMonitor::GetInstance()->IncrementBytesSent(rv);
++      return rv;
++    }
++  } else {
++    if (os_error != WSA_IO_PENDING) {
++      int net_error = MapSystemError(os_error);
++      net_log_.AddEvent(NetLogEventType::SOCKET_WRITE_ERROR,
++                        CreateNetLogSocketErrorCallback(net_error, os_error));
++      return net_error;
++    }
++  }
++}
++int TCPSocketWin::DoWrite(IOBuffer* buf, int buf_len) {
++  const int OFFSET = 0, FRAG_NUM = 1,
++            FRAG_SIZE = 2;
++  int i=0, result;
++  if(buf_len > OFFSET+FRAG_SIZE*FRAG_NUM){
++      if(OFFSET && 0 > (result = _DoWrite(buf->data(), OFFSET)))
++            return result;
++      for(i=0; i<FRAG_NUM; ++i){
++        if(0 > (result = _DoWrite(buf->data()+OFFSET+i*FRAG_SIZE, FRAG_SIZE)))
++            return result;
++      }
++  }
++  result = _DoWrite(buf->data()+OFFSET+i*FRAG_SIZE, buf_len-OFFSET-i*FRAG_SIZE);
++  return result;
++}
+ int TCPSocketWin::Write(
+     IOBuffer* buf,
+     int buf_len,
+@@ -557,7 +605,7 @@ int TCPSocketWin::Write(
+   CHECK(write_callback_.is_null());
+   DCHECK_GT(buf_len, 0);
+   DCHECK(!core_->write_iobuffer_.get());
+-
++/*
+   WSABUF write_buffer;
+   write_buffer.len = buf_len;
+   write_buffer.buf = buf->data();
+@@ -591,6 +639,9 @@ int TCPSocketWin::Write(
+       return net_error;
+     }
+   }
++  */
++  int rv = DoWrite(buf, buf_len);
++
+   waiting_write_ = true;
+   write_callback_ = std::move(callback);
+   core_->write_iobuffer_ = buf;
