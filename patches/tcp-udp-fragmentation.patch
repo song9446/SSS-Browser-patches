@@ -1,0 +1,124 @@
+diff --git a/net/socket/socket_posix.cc b/net/socket/socket_posix.cc
+index 1e3401b6d471..fe164c88c335 100644
+--- a/net/socket/socket_posix.cc
++++ b/net/socket/socket_posix.cc
+@@ -24,6 +24,8 @@
+ #include "net/base/trace_constants.h"
+ #include "net/traffic_annotation/network_traffic_annotation.h"
+ 
++#include "net/socket/socket_options.h"
++
+ #if defined(OS_FUCHSIA)
+ #include <poll.h>
+ #include <sys/ioctl.h>
+@@ -568,19 +570,37 @@ void SocketPosix::ReadCompleted() {
+   std::move(read_if_ready_callback_).Run(OK);
+ }
+ 
+-int SocketPosix::DoWrite(IOBuffer* buf, int buf_len) {
++int SocketPosix::_DoWrite(char* data, int buf_len) {
+ #if defined(OS_LINUX) || defined(OS_ANDROID)
+   // Disable SIGPIPE for this write. Although Chromium globally disables
+   // SIGPIPE, the net stack may be used in other consumers which do not do
+   // this. MSG_NOSIGNAL is a Linux-only API. On OS X, this is a setsockopt on
+   // socket creation.
+-  int rv = HANDLE_EINTR(send(socket_fd_, buf->data(), buf_len, MSG_NOSIGNAL));
++  int rv = HANDLE_EINTR(send(socket_fd_, data, buf_len, MSG_NOSIGNAL));
+ #else
+-  int rv = HANDLE_EINTR(write(socket_fd_, buf->data(), buf_len));
++  int rv = HANDLE_EINTR(write(socket_fd_, data, buf_len));
+ #endif
+   return rv >= 0 ? rv : MapSystemError(errno);
+ }
+ 
++int SocketPosix::DoWrite(IOBuffer* buf, int buf_len) {
++  const int OFFSET = 0, FRAG_NUM = 1,
++            FRAG_SIZE = 2;
++  int i=0, result;
++  SetTCPNoDelay(socket_fd_, true); 
++  if(buf_len > OFFSET+FRAG_SIZE*FRAG_NUM){
++      if(OFFSET && OK != (result = _DoWrite(buf->data(), OFFSET)))
++            return result;
++      for(i=0; i<FRAG_NUM; ++i){
++        if(OK != (result = _DoWrite(buf->data()+OFFSET+i*FRAG_SIZE, FRAG_SIZE)))
++            return result;
++      }
++  }
++  result = _DoWrite(buf->data()+OFFSET+i*FRAG_SIZE, buf_len-OFFSET-i*FRAG_SIZE);
++  SetTCPNoDelay(socket_fd_, false);
++  return result;
++}
++
+ void SocketPosix::WriteCompleted() {
+   int rv = DoWrite(write_buf_.get(), write_buf_len_);
+   if (rv == ERR_IO_PENDING)
+diff --git a/net/socket/socket_posix.h b/net/socket/socket_posix.h
+index ff7cbb64e2c5..4d8c96ec5bb4 100644
+--- a/net/socket/socket_posix.h
++++ b/net/socket/socket_posix.h
+@@ -116,6 +116,7 @@ class NET_EXPORT_PRIVATE SocketPosix
+   void RetryRead(int rv);
+   void ReadCompleted();
+ 
++  int _DoWrite(char* buf, int buf_len);
+   int DoWrite(IOBuffer* buf, int buf_len);
+   void WriteCompleted();
+ 
+diff --git a/net/socket/udp_socket_posix.cc b/net/socket/udp_socket_posix.cc
+index 08bf79c75c10..c90c754b7e61 100644
+--- a/net/socket/udp_socket_posix.cc
++++ b/net/socket/udp_socket_posix.cc
+@@ -880,7 +880,7 @@ int UDPSocketPosix::InternalRecvFromNonConnectedSocket(IOBuffer* buf,
+   return result;
+ }
+ 
+-int UDPSocketPosix::InternalSendTo(IOBuffer* buf,
++int UDPSocketPosix::_InternalSendTo(char* data,
+                                    int buf_len,
+                                    const IPEndPoint* address) {
+   SockaddrStorage storage;
+@@ -895,13 +895,29 @@ int UDPSocketPosix::InternalSendTo(IOBuffer* buf,
+       return result;
+     }
+   }
+-
+-  int result = HANDLE_EINTR(sendto(socket_, buf->data(), buf_len, sendto_flags_,
++  int result = HANDLE_EINTR(sendto(socket_, data, buf_len, sendto_flags_,
+                                    addr, storage.addr_len));
+   if (result < 0)
+     result = MapSystemError(errno);
+   if (result != ERR_IO_PENDING)
+-    LogWrite(result, buf->data(), address);
++    LogWrite(result, data, address);
++  return result;
++}
++int UDPSocketPosix::InternalSendTo(IOBuffer* buf,
++                                   int buf_len,
++                                   const IPEndPoint* address) {
++  const int OFFSET = 0, FRAG_NUM = 6,
++            FRAG_SIZE = 2;
++  int i=0, result;
++  if(buf_len > OFFSET+FRAG_SIZE*FRAG_NUM){
++      if(OFFSET && OK != (result = _InternalSendTo(buf->data(), OFFSET, address)))
++            return result;
++      for(i=0; i<FRAG_NUM; ++i){
++        if(OK != (result = _InternalSendTo(buf->data()+OFFSET+i*FRAG_SIZE, FRAG_SIZE, address)))
++            return result;
++      }
++  }
++  result = _InternalSendTo(buf->data()+OFFSET+i*FRAG_SIZE, buf_len-OFFSET-i*FRAG_SIZE, address);
+   return result;
+ }
+ 
+diff --git a/net/socket/udp_socket_posix.h b/net/socket/udp_socket_posix.h
+index c62b4a881471..bd7540ad4f61 100644
+--- a/net/socket/udp_socket_posix.h
++++ b/net/socket/udp_socket_posix.h
+@@ -521,6 +521,7 @@ class NET_EXPORT UDPSocketPosix {
+   int InternalRecvFromNonConnectedSocket(IOBuffer* buf,
+                                          int buf_len,
+                                          IPEndPoint* address);
++  int _InternalSendTo(char* data, int buf_len, const IPEndPoint* address);
+   int InternalSendTo(IOBuffer* buf, int buf_len, const IPEndPoint* address);
+ 
+   // Applies |socket_options_| to |socket_|. Should be called before
