@@ -1,0 +1,294 @@
+diff --git a/third_party/boringssl/src/ssl/d1_both.cc b/third_party/boringssl/src/ssl/d1_both.cc
+index f68cd1c40..9de7711cf 100644
+--- a/third_party/boringssl/src/ssl/d1_both.cc
++++ b/third_party/boringssl/src/ssl/d1_both.cc
+@@ -817,6 +817,59 @@ err:
+   return ret;
+ }
+ 
++int dtls1_flush_flight_hacked(SSL *ssl, size_t split_index) {
++  ssl->d1->outgoing_messages_complete = true;
++  // Start the retransmission timer for the next flight (if any).
++  dtls1_start_timer(ssl);
++
++  if (ssl->s3->write_shutdown != ssl_shutdown_none) {
++    OPENSSL_PUT_ERROR(SSL, SSL_R_PROTOCOL_IS_SHUTDOWN);
++    return -1;
++  }
++
++  //dtls1_update_mtu(ssl);
++
++  int ret = -1;
++  uint8_t *packet = (uint8_t *)OPENSSL_malloc(ssl->d1->mtu);
++  if (packet == NULL) {
++    OPENSSL_PUT_ERROR(SSL, ERR_R_MALLOC_FAILURE);
++    goto err;
++  }
++
++  while (ssl->d1->outgoing_written < ssl->d1->outgoing_messages_len) {
++    uint8_t old_written = ssl->d1->outgoing_written;
++    uint32_t old_offset = ssl->d1->outgoing_offset;
++
++    size_t packet_len;
++    // send splited message(|split_index| act as mtu)
++    if (!seal_next_packet(ssl, packet, &packet_len, split_index)) {
++      goto err;
++    }
++
++    int bio_ret = BIO_write(ssl->wbio.get(), packet, packet_len);
++    if (bio_ret <= 0) {
++      // Retry this packet the next time around.
++      ssl->d1->outgoing_written = old_written;
++      ssl->d1->outgoing_offset = old_offset;
++      ssl->s3->rwstate = SSL_WRITING;
++      ret = bio_ret;
++      goto err;
++    }
++    // after send one packet, restore last mtu
++    split_index = ssl->d1->mtu;
++  }
++
++  if (BIO_flush(ssl->wbio.get()) <= 0) {
++    ssl->s3->rwstate = SSL_WRITING;
++    goto err;
++  }
++
++  ret = 1;
++
++err:
++  OPENSSL_free(packet);
++  return ret;
++}
+ int dtls1_flush_flight(SSL *ssl) {
+   ssl->d1->outgoing_messages_complete = true;
+   // Start the retransmission timer for the next flight (if any).
+diff --git a/third_party/boringssl/src/ssl/dtls_method.cc b/third_party/boringssl/src/ssl/dtls_method.cc
+index d49687f8a..9e808b8d5 100644
+--- a/third_party/boringssl/src/ssl/dtls_method.cc
++++ b/third_party/boringssl/src/ssl/dtls_method.cc
+@@ -121,6 +121,7 @@ static const SSL_PROTOCOL_METHOD kDTLSProtocolMethod = {
+     dtls1_finish_message,
+     dtls1_add_message,
+     dtls1_add_change_cipher_spec,
++    dtls1_flush_flight_hacked,
+     dtls1_flush_flight,
+     dtls1_on_handshake_complete,
+     dtls1_set_read_state,
+diff --git a/third_party/boringssl/src/ssl/handshake_client.cc b/third_party/boringssl/src/ssl/handshake_client.cc
+index b0de67086..262f46358 100644
+--- a/third_party/boringssl/src/ssl/handshake_client.cc
++++ b/third_party/boringssl/src/ssl/handshake_client.cc
+@@ -332,6 +332,72 @@ bool ssl_write_client_hello(SSL_HANDSHAKE *hs) {
+ 
+   return ssl->method->add_message(ssl, std::move(msg));
+ }
++bool ssl_write_and_flush_client_hello_hacked(SSL_HANDSHAKE *hs){
++  SSL *const ssl = hs->ssl;
++  ScopedCBB cbb;
++  CBB body;
++  if (!ssl->method->init_message(ssl, cbb.get(), &body, SSL3_MT_CLIENT_HELLO)) {
++    return false;
++  }
++
++  CBB child;
++  if (!CBB_add_u16(&body, hs->client_version) ||
++      !CBB_add_bytes(&body, ssl->s3->client_random, SSL3_RANDOM_SIZE) ||
++      !CBB_add_u8_length_prefixed(&body, &child)) {
++    return false;
++  }
++
++  // Do not send a session ID on renegotiation.
++  if (!ssl->s3->initial_handshake_complete &&
++      !CBB_add_bytes(&child, hs->session_id, hs->session_id_len)) {
++    return false;
++  }
++
++  if (SSL_is_dtls(ssl)) {
++    if (!CBB_add_u8_length_prefixed(&body, &child) ||
++        !CBB_add_bytes(&child, ssl->d1->cookie, ssl->d1->cookie_len)) {
++      return false;
++    }
++  }
++
++  size_t header_len =
++      SSL_is_dtls(ssl) ? DTLS1_HM_HEADER_LENGTH : SSL3_HM_HEADER_LENGTH;
++  if (!ssl_write_client_cipher_list(hs, &body) ||
++      !CBB_add_u8(&body, 1 /* one compression method */) ||
++      !CBB_add_u8(&body, 0 /* null compression */))
++    return false;
++
++  // HACKED: used this value to calculate split_index
++  size_t ext_index = header_len + CBB_len(&body);
++  if(!ssl_add_clienthello_tlsext(hs, &body, header_len + CBB_len(&body))) {
++    return false;
++  }
++
++  Array<uint8_t> msg;
++  if (!ssl->method->finish_message(ssl, cbb.get(), &msg)) {
++    return false;
++  }
++
++  // Now that the length prefixes have been computed, fill in the placeholder
++  // PSK binder.
++  if (hs->needs_psk_binder &&
++      !tls13_write_psk_binder(hs, msg.data(), msg.size())) {
++    return false;
++  }
++
++  // HACKED
++  // devide the message into several parts each has a part of servername string
++  // extlength(2) + grease(4) + servername_type(2) + servername_length(2) + sni_list_length(2) + sni_type(1) + sni_length(2)
++  size_t split_index = ext_index + 2+4+2+2+2+1+2;
++  // HACKED: assume that sni field length is less than 256(1byte)
++  split_index += (uint8_t)msg[split_index-1] / 2;
++  if(split_index < msg.size()){
++      ssl->method->add_message(ssl, std::move(msg));
++      // flush splited message. the trail would be automatically sent in outer routin
++      return 0 < ssl->method->flush_flight_hacked(ssl, split_index);
++  }
++  return true;
++}
+ 
+ static bool parse_supported_versions(SSL_HANDSHAKE *hs, uint16_t *version,
+                                      const CBS *in) {
+@@ -430,7 +496,10 @@ static enum ssl_hs_wait_t do_start_connect(SSL_HANDSHAKE *hs) {
+     }
+   }
+ 
+-  if (!ssl_write_client_hello(hs)) {
++  /*if (!ssl_write_client_hello(hs)) {
++    return ssl_hs_error;
++  }*/
++  if (!ssl_write_and_flush_client_hello_hacked(hs)){
+     return ssl_hs_error;
+   }
+ 
+diff --git a/third_party/boringssl/src/ssl/internal.h b/third_party/boringssl/src/ssl/internal.h
+index ee2952a40..f3fc66318 100644
+--- a/third_party/boringssl/src/ssl/internal.h
++++ b/third_party/boringssl/src/ssl/internal.h
+@@ -1737,6 +1737,7 @@ bool ssl_ext_pre_shared_key_add_serverhello(SSL_HANDSHAKE *hs, CBB *out);
+ bool ssl_is_sct_list_valid(const CBS *contents);
+ 
+ bool ssl_write_client_hello(SSL_HANDSHAKE *hs);
++bool ssl_write_and_flush_client_hello_hacked(SSL_HANDSHAKE *hs);
+ 
+ enum ssl_cert_verify_context_t {
+   ssl_cert_verify_server,
+@@ -1988,6 +1989,8 @@ struct SSL_PROTOCOL_METHOD {
+   // add_change_cipher_spec adds a ChangeCipherSpec record to the pending
+   // flight. It returns true on success and false on error.
+   bool (*add_change_cipher_spec)(SSL *ssl);
++  // hacked below one!
++  int (*flush_flight_hacked)(SSL *ssl, size_t split_index);
+   // flush_flight flushes the pending flight to the transport. It returns one on
+   // success and <= 0 on error.
+   int (*flush_flight)(SSL *ssl);
+@@ -2697,12 +2700,14 @@ bool ssl3_init_message(SSL *ssl, CBB *cbb, CBB *body, uint8_t type);
+ bool ssl3_finish_message(SSL *ssl, CBB *cbb, Array<uint8_t> *out_msg);
+ bool ssl3_add_message(SSL *ssl, Array<uint8_t> msg);
+ bool ssl3_add_change_cipher_spec(SSL *ssl);
++int ssl3_flush_flight_hacked(SSL *ssl, size_t split_index);
+ int ssl3_flush_flight(SSL *ssl);
+ 
+ bool dtls1_init_message(SSL *ssl, CBB *cbb, CBB *body, uint8_t type);
+ bool dtls1_finish_message(SSL *ssl, CBB *cbb, Array<uint8_t> *out_msg);
+ bool dtls1_add_message(SSL *ssl, Array<uint8_t> msg);
+ bool dtls1_add_change_cipher_spec(SSL *ssl);
++int dtls1_flush_flight_hacked(SSL *ssl, size_t split_index);
+ int dtls1_flush_flight(SSL *ssl);
+ 
+ // ssl_add_message_cbb finishes the handshake message in |cbb| and adds it to
+diff --git a/third_party/boringssl/src/ssl/s3_both.cc b/third_party/boringssl/src/ssl/s3_both.cc
+index 27e9454f7..471aa2922 100644
+--- a/third_party/boringssl/src/ssl/s3_both.cc
++++ b/third_party/boringssl/src/ssl/s3_both.cc
+@@ -278,6 +278,76 @@ bool ssl3_add_change_cipher_spec(SSL *ssl) {
+   return true;
+ }
+ 
++int ssl3_flush_flight_hacked(SSL *ssl, size_t split_index) {
++  if (!tls_flush_pending_hs_data(ssl)) {
++    return -1;
++  }
++
++  if (ssl->quic_method) {
++    if (ssl->s3->write_shutdown != ssl_shutdown_none) {
++      OPENSSL_PUT_ERROR(SSL, SSL_R_PROTOCOL_IS_SHUTDOWN);
++      return -1;
++    }
++
++    if (!ssl->quic_method->flush_flight(ssl)) {
++      OPENSSL_PUT_ERROR(SSL, SSL_R_QUIC_INTERNAL_ERROR);
++      return -1;
++    }
++  }
++
++  if (ssl->s3->pending_flight == nullptr) {
++    return 1;
++  }
++
++  if (ssl->s3->write_shutdown != ssl_shutdown_none) {
++    OPENSSL_PUT_ERROR(SSL, SSL_R_PROTOCOL_IS_SHUTDOWN);
++    return -1;
++  }
++
++  static_assert(INT_MAX <= 0xffffffff, "int is larger than 32 bits");
++  if (ssl->s3->pending_flight->length > INT_MAX) {
++    OPENSSL_PUT_ERROR(SSL, ERR_R_INTERNAL_ERROR);
++    return -1;
++  }
++
++  // If there is pending data in the write buffer, it must be flushed out before
++  // any new data in pending_flight.
++  if (!ssl->s3->write_buffer.empty()) {
++    int ret = ssl_write_buffer_flush(ssl);
++    if (ret <= 0) {
++      ssl->s3->rwstate = SSL_WRITING;
++      return ret;
++    }
++  }
++
++  // Write the pending flight.
++  while (ssl->s3->pending_flight_offset < ssl->s3->pending_flight->length) {
++    size_t size = ssl->s3->pending_flight->length - ssl->s3->pending_flight_offset;
++    // send splited data
++    size = size>split_index? split_index: size;
++    int ret = BIO_write(
++        ssl->wbio.get(),
++        ssl->s3->pending_flight->data + ssl->s3->pending_flight_offset,
++        size);
++    if (ret <= 0) {
++      ssl->s3->rwstate = SSL_WRITING;
++      return ret;
++    }
++
++    ssl->s3->pending_flight_offset += ret;
++    // after one split sended, restore the default behavior
++    split_index = ssl->s3->pending_flight->length;
++  }
++
++  if (BIO_flush(ssl->wbio.get()) <= 0) {
++    ssl->s3->rwstate = SSL_WRITING;
++    return -1;
++  }
++
++  ssl->s3->pending_flight.reset();
++  ssl->s3->pending_flight_offset = 0;
++  return 1;
++}
+ int ssl3_flush_flight(SSL *ssl) {
+   if (!tls_flush_pending_hs_data(ssl)) {
+     return -1;
+diff --git a/third_party/boringssl/src/ssl/tls_method.cc b/third_party/boringssl/src/ssl/tls_method.cc
+index bc9410b33..475ea387e 100644
+--- a/third_party/boringssl/src/ssl/tls_method.cc
++++ b/third_party/boringssl/src/ssl/tls_method.cc
+@@ -119,6 +119,7 @@ static const SSL_PROTOCOL_METHOD kTLSProtocolMethod = {
+     ssl3_finish_message,
+     ssl3_add_message,
+     ssl3_add_change_cipher_spec,
++    ssl3_flush_flight_hacked,
+     ssl3_flush_flight,
+     ssl3_on_handshake_complete,
+     ssl3_set_read_state,

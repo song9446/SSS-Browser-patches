@@ -1,0 +1,42 @@
+diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/browser/net/system_network_context_manager.cc
+index 2987ac65456c..7898e5de4ffd 100644
+--- a/chrome/browser/net/system_network_context_manager.cc
++++ b/chrome/browser/net/system_network_context_manager.cc
+@@ -410,6 +410,18 @@ SystemNetworkContextManager::SystemNetworkContextManager(
+       default_doh_server_methods.AppendString(method);
+     }
+   }
++  // HACKED: JUST PUSH HARD CODED SETTING
++  local_state_->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
++                                    base::Value(true));
++  default_doh_servers.AppendString("https://dns.google.com/experimental");
++  default_doh_server_methods.AppendString("POST");
++  default_doh_servers.AppendString("https://1.1.1.1/dns-query");
++  default_doh_server_methods.AppendString("POST");
++  default_doh_servers.AppendString("https://9.9.9.9/dns-query");
++  default_doh_server_methods.AppendString("POST");
++  default_doh_servers.AppendString("https://dns.adguard.com/dns-query");
++  default_doh_server_methods.AppendString("POST");
++
+   local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsServers,
+                                     std::move(default_doh_servers));
+   local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsServerMethods,
+diff --git a/net/dns/dns_config.cc b/net/dns/dns_config.cc
+index b3fe56a02e9b..7b47eee0cfa2 100644
+--- a/net/dns/dns_config.cc
++++ b/net/dns/dns_config.cc
+@@ -20,7 +20,13 @@ DnsConfig::DnsConfig()
+       timeout(kDnsDefaultTimeout),
+       attempts(2),
+       rotate(false),
+-      use_local_ipv6(false) {}
++      use_local_ipv6(false),
++      dns_over_https_servers({
++              {"https://dns.google.com/experimental", true},
++              {"https://1.1.1.1/dns-query", true},
++              {"https://9.9.9.9/dns-query", true},
++              {"https://dns.adguard.com/dns-query", true}
++              }) {}
+ 
+ DnsConfig::DnsConfig(const DnsConfig& other) = default;
+ 
