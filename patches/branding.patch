@@ -106,3 +106,36 @@
  #endif  // defined(GOOGLE_CHROME_BUILD)
  
  // The path to the hint file that tells the pepper plugin loader
+--- a/chrome/android/java/res_chromium/values/channel_constants.xml
++++ b/chrome/android/java/res_chromium/values/channel_constants.xml
+@@ -3,9 +3,11 @@
+      Use of this source code is governed by a BSD-style license that can be
+      found in the LICENSE file. -->
+ 
+-<resources xmlns:android="http://schemas.android.com/apk/res/android">
++<resources xmlns:android="http://schemas.android.com/apk/res/android" 
++    xmlns:tools="http://schemas.android.com/tools"
++    tools:ignore="MissingTranslation">
+     <!-- The application name displayed to the user. -->
+-    <string name="app_name" translatable="false">Chromium</string>
+-    <string name="bookmark_widget_title" translatable="false">Chromium bookmarks</string>
+-    <string name="search_widget_title" translatable="false">Chromium search</string>
++    <string name="app_name">Plunger</string>
++    <string name="bookmark_widget_title">Plunger bookmarks</string>
++    <string name="search_widget_title">Plunger search</string>
+ </resources>
+--- /dev/null
++++ b/chrome/android/java/res_chromium/values-ko/channel_constants.xml
+@@ -0,0 +1,11 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright 2015 The Chromium Authors. All rights reserved.
++     Use of this source code is governed by a BSD-style license that can be
++     found in the LICENSE file. -->
++
++<resources xmlns:android="http://schemas.android.com/apk/res/android">
++    <!-- The application name displayed to the user. -->
++    <string name="app_name">뚫어뻥</string>
++    <string name="bookmark_widget_title">뚫어뻥 북마크</string>
++    <string name="search_widget_title">뚫어뻥 검색</string>
++</resources>
+
