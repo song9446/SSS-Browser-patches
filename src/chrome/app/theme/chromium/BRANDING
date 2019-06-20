@@ -1,0 +1,10 @@
+COMPANY_FULLNAME=The Plunger Authors
+COMPANY_SHORTNAME=The Plunger Authors
+PRODUCT_FULLNAME=Plunger
+PRODUCT_SHORTNAME=Plunger
+PRODUCT_INSTALLER_FULLNAME=Plunger Installer
+PRODUCT_INSTALLER_SHORTNAME=Plunger Installer
+COPYRIGHT=Copyright 2019 The Plunger Authors. All rights reserved.
+MAC_BUNDLE_ID=org.plunger.Plunger
+MAC_CREATOR_CODE=Cr24
+MAC_TEAM_ID=

@@ -1,0 +1,29 @@
+diff --git a/net/http/http_stream_parser.cc b/net/http/http_stream_parser.cc
+index 6615a48c8f..31ead758f5 100644
+--- a/net/http/http_stream_parser.cc
++++ b/net/http/http_stream_parser.cc
+@@ -469,9 +469,21 @@ int HttpStreamParser::DoSendHeaders() {
+     response_->request_time = base::Time::Now();
+ 
+   io_state_ = STATE_SEND_HEADERS_COMPLETE;
+-  return stream_socket_->Write(
+-      request_headers_.get(), bytes_remaining, io_callback_,
+-      NetworkTrafficAnnotationTag(traffic_annotation_));
++  if(sent_bytes_){
++      return stream_socket_->Write(
++          request_headers_.get(), bytes_remaining, io_callback_,
++          NetworkTrafficAnnotationTag(traffic_annotation_));
++  } else {
++      // if it is the first transaction,
++      // break the header into two pieces that each of them contain part of the HOST
++      char* data = reinterpret_cast<char*>(request_headers_->data());
++      int host_start_index=0, host_end_index;
++      for(host_start_index=0; data[host_start_index] != '\n'; ++host_start_index);
++      for(host_end_index=host_start_index+1; data[host_end_index] != '\n'; ++host_end_index);
++      return stream_socket_->Write(
++          request_headers_.get(), (host_start_index + host_end_index)/2, io_callback_,
++          NetworkTrafficAnnotationTag(traffic_annotation_));
++  }
+ }
+ 
+ int HttpStreamParser::DoSendHeadersComplete(int result) {
