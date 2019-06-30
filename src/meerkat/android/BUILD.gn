@@ -1,0 +1,57 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/rules.gni")
+
+assert(is_android)
+
+#android_resources("com_meerkat_resources") {
+#  resource_dirs = [ "java/res" ]
+#  android_manifest = "java/AndroidManifest.xml"
+#  custom_package = "com.meerkat.ads"
+#}
+#android_library("com_meerkat_java") {
+#  supports_android = true
+#  requires_android = true
+#  chromium_code = false  # Don't lint.
+#  java_files = [
+#    "java/src/com/meerkat/ads/Ads.java",
+#    "java/src/com/meerkat/ads/Interstitial.java",
+#    "java/src/com/meerkat/ads/Banner.java",
+#  ]
+#  deps = [
+#    ":com_meerkat_resources",
+#    "//third_party/android_deps:android_arch_core_runtime_java",
+#    "third_party/audience_network_sdk:audience_network_sdk_java",
+#    "third_party/applovin_sdk:com_applovin_applovin_sdk_java",
+#    "third_party/vungle_sdk:vungle_sdk_java",
+#  ]
+#}
+android_resources("com_meerkatbrowser_resources") {
+  resource_dirs = [ "java/res" ]
+  android_manifest = "java/AndroidManifest.xml"
+  custom_package = "com.meerkatbrowser.ad"
+}
+android_library("com_meerkatbrowser_java") {
+  supports_android = true
+  requires_android = true
+  chromium_code = false  # Don't lint.
+  java_files = [
+    "java/src/com/meerkatbrowser/ad/Ad.java",
+    "java/src/com/meerkatbrowser/ad/adapter/Adapter.java",
+    "java/src/com/meerkatbrowser/ad/AdSize.java",
+    "java/src/com/meerkatbrowser/ad/adapter/AppLovin.java",
+    "java/src/com/meerkatbrowser/ad/adapter/Facebook.java",
+    "java/src/com/meerkatbrowser/ad/adapter/Vungle.java",
+    "java/src/com/meerkatbrowser/ad/Listener.java",
+    "java/src/com/meerkatbrowser/ad/BlockChecker.java",
+  ]
+  deps = [
+    "//third_party/android_deps:android_arch_core_runtime_java",
+    "third_party/audience_network_sdk:audience_network_sdk_java",
+    "third_party/applovin_sdk:com_applovin_applovin_sdk_java",
+    "third_party/vungle_sdk:vungle_sdk_java",
+    ":com_meerkatbrowser_resources",
+  ]
+}

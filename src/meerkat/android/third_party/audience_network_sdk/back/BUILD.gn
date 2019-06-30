@@ -1,0 +1,13 @@
+import("//build/config/android/rules.gni")
+
+android_aar_prebuilt("audience_network_sdk_java") {
+  aar_path = "AudienceNetwork.arr"
+  info_path = "AudienceNetwork.info"
+  ignore_manifest = true  # Ignored because manifest merging is not supported (http://crbug.com/643967)
+  ignore_native_libraries = true # true for now, but TODO : add native lib support !
+}
+
+android_aar_prebuilt("audience_network_sdk_settings_java") {
+  aar_path = "DebugSettings.aar"
+  ignore_manifest = true  # Ignored because manifest merging is not supported (http://crbug.com/643967)
+}

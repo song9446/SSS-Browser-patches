@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MissingTranslation">
+    <string-array name="blocked_websites">
+        <item> xvideos.com </item>
+        <item> pornhub.com </item>
+        <item> xhamster.com </item>
+        <item> luscious.net </item>
+        <item> e-hentai.org </item>
+        <item> nhentai.net </item>
+        <item> rule34.paheal.net </item>
+        <item> rule34.xxx </item>
+        <item> sankakucomplex.com </item>
+        <item> thumbzilla.com </item>
+        <item> tsumino.com </item>
+        <item> zone-archive.com </item>
+        <item> hellven.net </item>
+        <item> manamoa8.net </item>
+        <item> bittorrent.com </item>
+        <item> womenonweb.org </item>
+        <item> lezhin.com </item>
+        <item> hardsextube.com </item>
+        <item> drtuber.com </item>
+        <item> 4shared.com </item>
+        <item> nudevista.club </item>
+        <item> spankwire.com </item>
+        <item> redtube.com </item>
+        <item> sextube.com </item>
+        <item> fuq.com </item>
+        <item> tcafe.net         </item>
+        <item> lolhentai.net </item>
+        <item> tube8.com </item>
+        <item> hitomi.la </item>
+        <item> dongyoungsang.com </item>
+        <item> youporn.com </item>
+        <item> danbooru.donmai.us </item>
+        <item> gelbooru.com </item>
+        <item> lolibooru.com </item>
+        <item> safebooru.org </item>
+        <item> i-forge.net </item>
+        <item> bitsnoop.com </item>
+        <item> yande.re </item>
+        <item> konachan.com </item>
+        <item> gurochan.cx </item>
+        <item> tbib.org </item>
+        <item> rule34hentai.net </item>
+        <item> xtube.com </item>
+        <item> pornmd.com </item>
+        <item> momoi.xyz </item>
+    </string-array>
+</resources>

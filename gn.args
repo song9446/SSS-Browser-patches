@@ -20,7 +20,7 @@ is_component_build=false
 is_debug=false
 is_official_build=true
 jumbo_file_merge_limit=60
-safe_browsing_mode=0
+safe_browsing_mode=1
 strip_absolute_paths_from_debug_symbols=true
 strip_debug_info=false
 symbol_level=1
@@ -31,3 +31,4 @@ use_jumbo_build=false
 use_official_google_api_keys=false
 use_openh264=true chrome_pgo_phase=0 full_wpo_on_official=true
 use_sysroot=false
+v8_use_snapshot=false

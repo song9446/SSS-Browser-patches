@@ -1,0 +1,21 @@
+import("//build/config/android/rules.gni")
+assert(is_android)
+
+android_assets("audience_network_sdk_assets") {
+  sources = [
+      # "//nanocap/third_party/audience_network_sdk/assets/audience_network.dex",
+      "assets/audience_network.dex",
+  ]
+}
+
+java_prebuilt("audience_network_sdk_java") {
+  supports_android = true
+  requires_android = true
+  jar_path = "classes.jar"
+  # proguard_configs = [ "//nanocap/third_party/audience_network_sdk/proguard.txt" ]
+  proguard_configs = [ "proguard.txt" ]
+  deps = [
+      ":audience_network_sdk_assets",
+      "//third_party/android_deps:google_play_services_ads_identifier_java",
+  ]
+}

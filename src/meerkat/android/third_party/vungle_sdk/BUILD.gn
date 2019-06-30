@@ -1,0 +1,104 @@
+import("//build/config/android/rules.gni")
+assert(is_android)
+
+java_prebuilt("converter_gson_java") {
+  supports_android = true
+  requires_android = true
+  jar_path = "libs/converter-gson-2.2.0.jar"
+  deps = [ 
+    ":okio_java",
+    ":okhttp_java",
+    ":gson_java", 
+    ":retrofit_java",
+  ]
+  visibility = [ ":*" ]
+}
+
+java_prebuilt("fetch_java") {
+  supports_android = true
+  requires_android = true
+  jar_path = "libs/fetch-1.1.5.jar"
+  deps = [
+    "//third_party/android_deps:android_support_v4_java",
+  ]
+  visibility = [ ":*" ]
+}
+
+java_prebuilt("gson_java") {
+  supports_android = true
+  requires_android = true
+  jar_path = "libs/gson-2.7.jar"
+  deps = [ ]
+  visibility = [ ":*" ]
+}
+
+java_prebuilt("logging_interceptor_java") {
+  supports_android = true
+  requires_android = true
+  jar_path = "libs/logging-interceptor-3.7.0.jar"
+  deps = [ 
+    ":okhttp_java",
+    ":okio_java",
+  ]
+  visibility = [ ":*" ]
+}
+
+java_prebuilt("okhttp_java") {
+  supports_android = true
+  requires_android = true
+  jar_path = "libs/okhttp-3.7.0.jar"
+  deps = [
+    ":okio_java"
+  ]
+  visibility = [ ":*" ]
+}
+
+java_prebuilt("okio_java") {
+  supports_android = true
+  requires_android = true
+  jar_path = "libs/okio-1.12.0.jar" 
+  deps = [ ]
+  visibility = [ ":*" ]
+}
+
+java_prebuilt("retrofit_java") {
+  supports_android = true
+  requires_android = true
+  jar_path = "libs/retrofit-2.2.0.jar"
+  deps = [ 
+    ":okio_java",
+    ":okhttp_java",
+    ]
+}
+
+java_prebuilt("vng_moat_mobile_app_kit_java") {
+  supports_android = true
+  requires_android = true
+  jar_path = "libs/VNG-moat-mobile-app-kit-2.2.0.jar"
+  deps = [
+    "//third_party/android_deps:android_support_v4_java",
+    "//third_party/android_deps:google_play_services_ads_identifier_java",
+  ]
+  visibility = [ ":*" ]
+}
+
+java_prebuilt("vungle_sdk_java") {
+  supports_android = true
+  requires_android = true
+  jar_path = "libs/vungle-android-sdk-6.3.24.jar"
+
+  proguard_configs = [ "proguard.txt" ]
+
+  deps = [
+    ":converter_gson_java",
+    ":fetch_java",
+    ":gson_java",
+    ":logging_interceptor_java",
+    ":retrofit_java",
+    ":vng_moat_mobile_app_kit_java",
+    "//third_party/android_deps:com_android_support_support_compat_java",
+    "//third_party/android_deps:com_android_support_support_core_utils_java",
+    "//third_party/android_deps:google_play_services_basement_java",
+    "//third_party/android_deps:google_play_services_location_java",
+  ]
+}

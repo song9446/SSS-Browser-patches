@@ -2,7 +2,7 @@ diff --git a/chrome/browser/net/system_network_context_manager.cc b/chrome/brows
 index 2987ac65456c..7898e5de4ffd 100644
 --- a/chrome/browser/net/system_network_context_manager.cc
 +++ b/chrome/browser/net/system_network_context_manager.cc
-@@ -410,6 +410,18 @@ SystemNetworkContextManager::SystemNetworkContextManager(
+@@ -373,6 +373,18 @@ SystemNetworkContextManager::SystemNetworkContextManager(
        default_doh_server_methods.AppendString(method);
      }
    }
@@ -29,14 +29,13 @@ index b3fe56a02e9b..7b47eee0cfa2 100644
        timeout(kDnsDefaultTimeout),
        attempts(2),
        rotate(false),
--      use_local_ipv6(false) {}
-+      use_local_ipv6(false),
+       use_local_ipv6(false),
 +      dns_over_https_servers({
 +              {"https://dns.google.com/experimental", true},
 +              {"https://1.1.1.1/dns-query", true},
 +              {"https://9.9.9.9/dns-query", true},
 +              {"https://dns.adguard.com/dns-query", true}
-+              }) {}
++              }),
+       secure_dns_mode(SecureDnsMode::OFF) {}
  
  DnsConfig::DnsConfig(const DnsConfig& other) = default;
- 

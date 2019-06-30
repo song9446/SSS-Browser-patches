@@ -1,0 +1,259 @@
+diff --git a/build/android/gradle/android.jinja b/build/android/gradle/android.jinja
+index 4a7da2961e39..243ec4b52159 100644
+--- a/build/android/gradle/android.jinja
++++ b/build/android/gradle/android.jinja
+@@ -51,8 +51,9 @@ android {
+ 
+     defaultConfig {
+         vectorDrawables.useSupportLibrary = true
+-        minSdkVersion 19
++        minSdkVersion 21
+         targetSdkVersion {{ target_sdk_version }}
++        multiDexEnabled true
+     }
+ 
+     compileOptions {
+diff --git a/chrome/android/BUILD.gn b/chrome/android/BUILD.gn
+index 3cefe8fd2ad9..0c6301e5acde 100644
+--- a/chrome/android/BUILD.gn
++++ b/chrome/android/BUILD.gn
+@@ -384,6 +384,7 @@ android_library("chrome_java") {
+     "//ui/base/mojo:mojo_java",
+     "//ui/gfx/geometry/mojo:mojo_java",
+     "//url/mojom:url_mojom_gurl_java",
++    "//meerkat/android:com_meerkatbrowser_java"
+   ]
+ 
+   deps += feed_deps
+diff --git a/chrome/android/java/AndroidManifest.xml b/chrome/android/java/AndroidManifest.xml
+index 187352ef23db..d8dda8598410 100644
+--- a/chrome/android/java/AndroidManifest.xml
++++ b/chrome/android/java/AndroidManifest.xml
+@@ -22,6 +22,8 @@ by a child template that "extends" this file.
+     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+     <uses-permission-sdk-23 android:name="android.permission.ACCESS_WIFI_STATE" />
+     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
++    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
++    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+ 
+     <!--
+       Enable runtime permissions as uses-permission in tip of tree builds
+@@ -144,7 +146,27 @@ by a child template that "extends" this file.
+         android:allowBackup="false"
+         {% endif %}
+         android:networkSecurityConfig="@xml/network_security_config"
+-        {% block extra_application_attributes %}{% endblock %}>
++        {% block extra_application_attributes %}{% endblock %}
++        >
++
++        <activity android:name="com.facebook.ads.AudienceNetworkActivity" android:hardwareAccelerated="true" />
++        <meta-data android:name="com.google.android.gms.version"
++            android:value="@integer/google_play_services_version" />
++        <meta-data android:name="applovin.sdk.key"
++            android:value="UWTTT6tQGzp2yGuXC7BVbloIBzzK_Wm1U3AImnG-_KiAMzPPNbbrhOFhEJuacb0xb9F_MiK3UZDMlPeG--BhRx"  />
++        <activity
++          android:name="com.vungle.warren.ui.VungleActivity"
++          android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize"
++          android:launchMode="singleTop"
++          android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
++        <receiver
++          android:name="com.vungle.warren.NetworkProviderReceiver"
++          android:enabled="false" >
++          <intent-filter>
++            <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
++            <category android:name="android.intent.category.DEFAULT" />
++          </intent-filter>
++        </receiver>
+ 
+        <meta-data android:name="android.allow_multiple_resumed_activities" android:value="true" />
+ 
+@@ -557,7 +579,7 @@ by a child template that "extends" this file.
+             android:theme="@style/Theme.Chromium.TabbedMode"
+             android:exported="false"
+             android:taskAffinity="{{ manifest_package }}.ChromeTabbedActivity2"
+-            android:launchMode="singleTask"
++            android:launchMode="singleTop"
+             {{ self.chrome_activity_common() }}
+             {{ self.supports_video_persistence() }}
+         >
+diff --git a/chrome/android/java/res/xml/network_security_config.xml b/chrome/android/java/res/xml/network_security_config.xml
+index 97cba21c6063..4904c4200b33 100644
+--- a/chrome/android/java/res/xml/network_security_config.xml
++++ b/chrome/android/java/res/xml/network_security_config.xml
+@@ -15,4 +15,11 @@
+             <certificates src="system"/>
+         </trust-anchors>
+     </base-config>
++    <domain-config cleartextTrafficPermitted="false">
++        <domain includeSubdomains="true">example.com</domain>
++        <domain includeSubdomains="true">cdn.example2.com</domain>
++    </domain-config>
++    <domain-config cleartextTrafficPermitted="true">
++        <domain includeSubdomains="true">127.0.0.1</domain>
++    </domain-config>
+ </network-security-config>
+diff --git a/chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java b/chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java
+index 402e89830427..26bd9861a371 100644
+--- a/chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java
++++ b/chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java
+@@ -174,12 +176,51 @@ import java.lang.annotation.RetentionPolicy;
+ import java.util.List;
+ import java.util.Locale;
+ 
++import java.net.URL;
++
++import com.meerkatbrowser.ad.*;
++
+ /**
+  * This is the main activity for ChromeMobile when not running in document mode.  All the tabs
+  * are accessible via a chrome specific tab switching UI.
+  */
+ public class ChromeTabbedActivity
+         extends ChromeActivity implements OverviewModeObserver, ScreenshotMonitorDelegate {
++    Ad interstitialAd;
++    BlockChecker blockChecker = new BlockChecker(ContextUtils.getApplicationContext());
++    public void maybeStartInterstitialAd(String url){
++        Context appContext = ContextUtils.getApplicationContext();
++        if(interstitialAd == null){
++            Log.e(TAG, "create intersitial ad");
++            Bundle[] params = new Bundle[]{new Bundle(), new Bundle(), new Bundle()};
++            String[] providers = new String[]{"Vungle", "Facebook", "AppLovin"};
++            params[0].putString("APP_ID", "5d0f9d72fe3d6f00112cfb65");
++            params[0].putString("PLACEMENT_REFERENCE_ID", "DEFAULT-4692376");
++            params[1].putString("PLACEMENT_ID", "700550223723047_700550750389661");
++            params[2].putString("ZONE_ID", "7188b9ae78a7c218");
++            interstitialAd = new Ad(providers, params, params);
++            interstitialAd.initialize(appContext);
++        }
++        try {
++            if(blockChecker.isBlockedURL(url) && (true ||
++                   (interstitialAd.getTimeMillisDeltaFromLastShown() > 1000*3600/2
++                    && interstitialAd.getShownNum() < 5)
++                || (interstitialAd.getShownNum() == 0) ) ) {
++                interstitialAd.interstitial(appContext, new Listener(){
++                    @Override
++                    public void onSuccess(){
++                        Log.e(TAG, "success..");
++                    }
++                    @Override
++                    public void onError(String msg){
++                        Log.e(TAG, "error..");
++                    }
++                });
++           }
++        } catch(Exception e){
++            Log.e(TAG, "error:", e);
++        }
++    }
+     @IntDef({BackPressedResult.NOTHING_HAPPENED, BackPressedResult.HELP_URL_CLOSED,
+             BackPressedResult.MINIMIZED_NO_TAB_CLOSED, BackPressedResult.MINIMIZED_TAB_CLOSED,
+             BackPressedResult.TAB_CLOSED, BackPressedResult.TAB_IS_NULL,
+@@ -1577,6 +1622,8 @@ public class ChromeTabbedActivity
+         }
+ 
+         IncognitoTabHostRegistry.getInstance().register(mIncognitoTabHost);
++
++        maybeStartInterstitialAd("");
+     }
+ 
+     @Override
+@@ -1674,6 +1721,13 @@ public class ChromeTabbedActivity
+                             navigation.isFragmentNavigation(), navigation.httpStatusCode());
+                 }
+             }
++
++            @Override
++            public void onPageLoadStarted(final Tab tab, String url) {
++                if (getActivityTab() == tab) {
++                    maybeStartInterstitialAd(url);
++                }
++            }
+         };
+ 
+         if (startIncognito) mTabModelSelectorImpl.selectModel(true);
+diff --git a/tools/android/roll/android_deps/build.gradle b/tools/android/roll/android_deps/build.gradle
+index fd393bde98fb..7eff024c05ba 100644
+--- a/tools/android/roll/android_deps/build.gradle
++++ b/tools/android/roll/android_deps/build.gradle
+@@ -9,6 +9,8 @@ repositories {
+     maven {
+         url 'https://maven.google.com'
+     }
++    jcenter()
++    maven { url "https://s3.amazonaws.com/moat-sdk-builds" }
+ }
+ 
+ dependencies {
+@@ -16,6 +18,7 @@ dependencies {
+ 
+     // Architecture components
+     def archComponentsVersion = '1.1.1'
++    compile "android.arch.core:runtime:${archComponentsVersion}"
+     compile "android.arch.lifecycle:runtime:${archComponentsVersion}"
+     compile "android.arch.lifecycle:common:${archComponentsVersion}"
+     compile "android.arch.lifecycle:common-java8:${archComponentsVersion}"
+@@ -23,25 +26,26 @@ dependencies {
+     // Play services libraries
+     // See https://developers.google.com/android/guides/releases for updates
+     // Starting from 15.0.0 these libraries are allowed to update independently
+-    def gmsVersion = '15.0.1'
+-    compile "com.google.android.gms:play-services-basement:${gmsVersion}"
+-    compile "com.google.android.gms:play-services-tasks:${gmsVersion}"
+-    compile "com.google.android.gms:play-services-base:${gmsVersion}"
+-    compile "com.google.android.gms:play-services-auth-base:${gmsVersion}"
+-    compile "com.google.android.gms:play-services-auth-api-phone:${gmsVersion}"
+-    compile "com.google.android.gms:play-services-auth:${gmsVersion}"
+-    compile "com.google.android.gms:play-services-cast:16.0.1"
+-    compile "com.google.android.gms:play-services-cast-framework:16.0.1"
+-    compile "com.google.android.gms:play-services-iid:${gmsVersion}"
++    compile "com.google.android.gms:play-services-basement:16.2.0"
++    compile "com.google.android.gms:play-services-tasks:16.0.1"
++    compile "com.google.android.gms:play-services-base:16.0.1"
++    compile "com.google.android.gms:play-services-auth-base:16.0.0"
++    compile "com.google.android.gms:play-services-auth-api-phone:16.0.0"
++    compile "com.google.android.gms:play-services-auth:16.0.0"
++    compile "com.google.android.gms:play-services-cast:16.0.3"
++    compile "com.google.android.gms:play-services-cast-framework:16.0.3"
++    compile "com.google.android.gms:play-services-iid:16.0.1"
+     compile "com.google.android.gms:play-services-instantapps:16.0.0"
+-    compile "com.google.android.gms:play-services-gcm:${gmsVersion}"
+-    compile "com.google.android.gms:play-services-location:${gmsVersion}"
+-    compile "com.google.android.gms:play-services-vision-common:${gmsVersion}"
+-    compile "com.google.android.gms:play-services-vision:${gmsVersion}"
+-    compile "com.google.android.gms:play-services-fido:${gmsVersion}"
++    compile "com.google.android.gms:play-services-gcm:16.1.0"
++    compile "com.google.android.gms:play-services-location:16.0.0"
++    compile "com.google.android.gms:play-services-vision-common:16.2.0"
++    compile "com.google.android.gms:play-services-vision:16.2.0"
++    compile "com.google.android.gms:play-services-fido:16.0.0"
++    compile "com.google.android.gms:play-services-ads-identifier:16.0.0"
++    //compile "com.google.android.gms:play-services-ads:17.2.1"
+ 
+     // Support v4 libraries
+-    def supportLibVersion = '27.0.0'
++    def supportLibVersion = '27.1.1'
+     compile "com.android.support:support-v4:${supportLibVersion}"
+     compile "com.android.support:support-compat:${supportLibVersion}"
+     compile "com.android.support:support-core-ui:${supportLibVersion}"
+diff --git a/tools/android/roll/android_deps/buildSrc/src/main/groovy/BuildConfigGenerator.groovy b/tools/android/roll/android_deps/buildSrc/src/main/groovy/BuildConfigGenerator.groovy
+index e820dc9f649b..f546b7c6dbdc 100644
+--- a/tools/android/roll/android_deps/buildSrc/src/main/groovy/BuildConfigGenerator.groovy
++++ b/tools/android/roll/android_deps/buildSrc/src/main/groovy/BuildConfigGenerator.groovy
+@@ -241,6 +241,7 @@ class BuildConfigGenerator extends DefaultTask {
+         switch(dependencyId) {
+             case 'com_android_support_support_compat':
+             case 'com_android_support_support_media_compat':
++            case 'com_android_support_versionedparcelable':
+                 // Target has AIDL, but we don't support it yet: http://crbug.com/644439
+                 sb.append('  ignore_aidl = true\n')
+                 break
+@@ -249,6 +250,9 @@ class BuildConfigGenerator extends DefaultTask {
+                 // the library is present: b/70887421
+                 sb.append('  deps += [":com_android_support_support_fragment_java"]\n')
+                 break
++            case 'com_google_android_gms_play_services_ads':
++                sb.append('  deps -= [":com_android_support_customtabs_java"]\n')
++                sb.append('  deps += ["//third_party/custom_tabs_client:custom_tabs_support_java"]\n')
+             case 'com_google_android_gms_play_services_basement':
+                 // Deprecated deps jar but still needed by play services basement.
+                 sb.append('  input_jars_paths=["\\$android_sdk/optional/org.apache.http.legacy.jar"]\n')
