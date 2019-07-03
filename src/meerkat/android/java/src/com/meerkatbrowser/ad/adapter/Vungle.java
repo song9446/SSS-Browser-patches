@@ -21,6 +21,7 @@ import com.vungle.warren.error.VungleException; // onError message
 
 public class Vungle implements Adapter {
     public static String TAG = "VungleAdAdapter";
+    private Bundle params;
     @Override
     public void initialize(Context context, Bundle params, Listener listener) {
         if(com.vungle.warren.Vungle.isInitialized()){
@@ -45,13 +46,14 @@ public class Vungle implements Adapter {
         });
     }
     @Override
-    public void interstitial(Context context, Bundle params, Listener listener) {
+    public void loadInterstitial(Context context, Bundle params, Listener listener) {
         Log.e(TAG, "vungle inter start");
+        this.params = params;
         com.vungle.warren.Vungle.loadAd(params.getString("PLACEMENT_REFERENCE_ID"), new LoadAdCallback() {
             @Override
             public void onAdLoad(String placementReferenceId) { 
                 Log.e(TAG, "vungle inter loaded");
-                showInterstitial(context, params, listener);
+                listener.onSuccess();
             }
             @Override
             public void onError(String placementReferenceId, Throwable throwable) {
@@ -60,10 +62,7 @@ public class Vungle implements Adapter {
         });
     }
     @Override
-    public void banner(Context context, ViewGroup container, AdSize adsize, Bundle params, Listener listener) {
-        listener.onError("vungle has no banner");
-    }
-    private void showInterstitial(Context context, Bundle params, Listener listener){
+    public void showInterstitial(Context context, Listener listener){
         Log.e(TAG, "vungle inter show");
         com.vungle.warren.Vungle.playAd(params.getString("PLACEMENT_REFERENCE_ID"), null, new PlayAdCallback() {
             @Override
@@ -78,6 +77,17 @@ public class Vungle implements Adapter {
                 listener.onError("placementId: " + placementReferenceId + ": " + throwable.getLocalizedMessage());
             }
         });
+    }
+    @Override
+    public View createAdView(Context context, AdSize adsize, Bundle params){
+        return null;
+    }
+    @Override
+    public void loadAdView(View view, Listener listener){
+        return;
+    }
+    public void banner(Context context, ViewGroup container, AdSize adsize, Bundle params, Listener listener) {
+        listener.onError("vungle has no banner");
     }
 }
 

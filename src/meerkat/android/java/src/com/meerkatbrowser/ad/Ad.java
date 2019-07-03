@@ -22,8 +22,11 @@ public class Ad {
     Bundle[] adParams;
     int shownNum = 0;
     long lastShownTime = System.currentTimeMillis();
+    long lastLoadTime = System.currentTimeMillis();
+    boolean loaded = false;
     private boolean initializedOne = false;
-    public Adapter name2adapter(String name){
+    private int loadedChannelIndex = -1;
+    public static Adapter name2adapter(String name){
         switch(name){
         case "Facebook":
             return new Facebook();
@@ -31,18 +34,33 @@ public class Ad {
             return new AppLovin();
         case "Vungle":
             return new Vungle();
+        case "Admob":
+            return new Admob();
         }
         return null;
     }
     private void updateStatsAfterShown() {
         shownNum += 1;
+        loadedChannelIndex = -1;
+        loaded = false;
         lastShownTime = System.currentTimeMillis();
+    }
+    private void updateStatsAfterLoad(int channelIndex) {
+        loadedChannelIndex = channelIndex;
+        loaded = true;
+        lastLoadTime = System.currentTimeMillis();
+    }
+    public boolean isLoaded(){
+        return loaded;
     }
     public int getShownNum(){
         return shownNum; 
     }
     public long getTimeMillisDeltaFromLastShown(){
         return System.currentTimeMillis() - lastShownTime;
+    }
+    public long getTimeMillisDeltaFromLastLoad(){
+        return System.currentTimeMillis() - lastLoadTime;
     }
     public Ad(String[] channelNames, Bundle[] initializeParams, Bundle[] adParams) {
         assert(adParams.length == channelNames.length && initializeParams.length == channelNames.length);
@@ -124,7 +142,7 @@ public class Ad {
                 }
                 @Override
                 public void onError(String msg){
-                    Log.e(TAG, "error while initializing: " + msg);
+                    Log.e(TAG, "error while initializing with " + index + "th provider: " + msg);
                     initialized.set(index, false);
                     initializeDone.set(index, true);
                     boolean allInitialized = true;
@@ -135,6 +153,7 @@ public class Ad {
             });
         }
     }
+    /*
     public void banner(Context context, ViewGroup container, AdSize adSize, Listener listener){
         final Context context_ = context;
         final ViewGroup container_ = container;
@@ -171,38 +190,48 @@ public class Ad {
                 }
             });
     }
-    public void interstitial(Context context, Listener listener) {
+    */
+    public void loadInterstitial(Context context, Listener listener) {
         final Context context_ = context;
         final Listener listener_ = listener;
+        loadedChannelIndex = -1;
         if(isInitialized())
-            interstitial(context_, listener, 0);
+            loadInterstitial(context_, listener, 0);
         else{
             internalInitializeListener = new Listener(){
                 @Override
                 public void onInitialized(){
-                    interstitial(context_, listener_, 0);
+                    loadInterstitial(context_, listener_, 0);
                 }
             };
         }
     }
-    private void interstitial(Context context, Listener listener, int index) {
+    private void loadInterstitial(Context context, Listener listener, int index) {
         Log.e(TAG, "try to load interstitial at " + index);
         if(index >= channels.size())
             listener.onError("interstital: all channel fail");
         else if(!initialized.get(index)) 
-            interstitial(context, listener, index+1);
+            loadInterstitial(context, listener, index+1);
         else 
-            channels.get(index).interstitial(context, adParams[index], new Listener(){ 
+            channels.get(index).loadInterstitial(context, adParams[index], new Listener(){ 
                 @Override
                 public void onSuccess(){
-                    updateStatsAfterShown();
+                    updateStatsAfterLoad(index);
                     listener.onSuccess();
                 }
                 @Override
                 public void onError(String msg){
                     Log.e(TAG, "fail with " + index + "th channel, retry with next channel. error msg: " + msg);
-                    interstitial(context, listener, index+1);
+                    loadInterstitial(context, listener, index+1);
                 }
             });
+    }
+    public void showInterstitial(Context context, Listener listener){
+        if(getTimeMillisDeltaFromLastLoad() >= 1000*3600/2)
+            listener.onError("timeout(load ad too far ago)");
+        else if(loadedChannelIndex >= 0){
+            channels.get(loadedChannelIndex).showInterstitial(context, listener);
+            updateStatsAfterShown();
+        }
     }
 }

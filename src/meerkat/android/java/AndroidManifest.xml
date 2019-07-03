@@ -18,12 +18,16 @@
           package="com.meerkatbrowser">
     <uses-sdk android:minSdkVersion="16"/>
     <application>
+        <!-- Sample AdMob App ID: ca-app-pub-3940256099942544~3347511713 -->
         <activity android:name="com.facebook.ads.AudienceNetworkActivity" android:hardwareAccelerated="true" />
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-3940256099942544~3347511713"/>
         <meta-data android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
         <meta-data android:name="applovin.sdk.key"
-            android:value="UWTTT6tQGzp2yGuXC7BVbloIBzzK_Wm1U3AImnG-_KiAMzPPNbbrhOFhEJuacb0xb9F_MiK3UZDMlPeG--BhRx" />
-        <!--<activity
+            android:value="UWTTT6tQGzp2yGuXC7BVbloIBzzK_Wm1U3AImnG-_KiAMzPPNbbrhOFhEJuacb0xb9F_MiK3UZDMlPeG--BhRx"  />
+        <activity
           android:name="com.vungle.warren.ui.VungleActivity"
           android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize"
           android:launchMode="singleTop"
@@ -35,6 +39,6 @@
             <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             <category android:name="android.intent.category.DEFAULT" />
           </intent-filter>
-        </receiver>-->
+        </receiver>
     </application>
 </manifest>

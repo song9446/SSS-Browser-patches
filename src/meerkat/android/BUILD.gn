@@ -44,11 +44,15 @@ android_library("com_meerkatbrowser_java") {
     "java/src/com/meerkatbrowser/ad/adapter/AppLovin.java",
     "java/src/com/meerkatbrowser/ad/adapter/Facebook.java",
     "java/src/com/meerkatbrowser/ad/adapter/Vungle.java",
+    "java/src/com/meerkatbrowser/ad/adapter/Admob.java",
     "java/src/com/meerkatbrowser/ad/Listener.java",
     "java/src/com/meerkatbrowser/ad/BlockChecker.java",
+    "java/src/com/meerkatbrowser/ad/Banner.java",
+    "java/src/com/meerkatbrowser/ad/BannerLayout.java",
   ]
   deps = [
-    "//third_party/android_deps:android_arch_core_runtime_java",
+    "//third_party/android_deps:google_play_services_ads_java",
+    "//third_party/android_deps:google_play_services_ads_lite_java",
     "third_party/audience_network_sdk:audience_network_sdk_java",
     "third_party/applovin_sdk:com_applovin_applovin_sdk_java",
     "third_party/vungle_sdk:vungle_sdk_java",

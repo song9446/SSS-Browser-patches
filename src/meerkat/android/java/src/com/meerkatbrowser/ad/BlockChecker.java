@@ -21,14 +21,26 @@ public class BlockChecker {
     public BlockChecker(Context context){
         Resources res = context.getResources();
         blocked_websites = res.getStringArray(R.array.blocked_websites);
-    }
-    public boolean isBlockedURL(String urlString) throws MalformedURLException {
-        String host = (new URL(urlString)).getHost().toLowerCase().trim();
-        host = host.startsWith("m.")? host.substring(2) : host;
-        host = host.startsWith("www.")? host.substring(4) : host;
-        Log.e(TAG, "host: " + host);
         for(int i=0; i<blocked_websites.length; ++i)
-            if(blocked_websites[i].toLowerCase().trim().equals(host))
+            blocked_websites[i] = normalizeURL(blocked_websites[i]);
+    }
+    private String normalizeURL(String target) {
+        target = target.toLowerCase().trim();
+        if(target.startsWith("http")){
+            try{
+                target = (new URL(target)).getHost();
+            }catch(Exception e){
+            }
+        }
+        target = target.startsWith("m.")? target.substring(2) : target;
+        target = target.startsWith("www.")? target.substring(4) : target;
+        return target;
+    }
+    public boolean isBlockedURL(String url) {
+        String target = normalizeURL(url);
+        Log.e(TAG, "target: " + target);
+        for(int i=0; i<blocked_websites.length; ++i)
+            if(blocked_websites[i].equals(target))
                 return true;
         return false;
     }

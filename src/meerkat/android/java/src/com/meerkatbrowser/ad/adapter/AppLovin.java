@@ -27,6 +27,7 @@ public class AppLovin implements Adapter {
     boolean initialized = false;
     AppLovinAdView adView;
     AppLovinInterstitialAdDialog interstitialAd;
+    AppLovinAd loadedAd;
     @Override
     public void initialize(Context context, Bundle params, Listener listener) {
         if(initialized){
@@ -40,12 +41,12 @@ public class AppLovin implements Adapter {
         listener.onSuccess();
     }
     @Override
-    public void interstitial(Context context, Bundle params, Listener listener) {
+    public void loadInterstitial(Context context, Bundle params, Listener listener) {
         interstitialAd = AppLovinInterstitialAd.create( AppLovinSdk.getInstance(context), context);
         AppLovinSdk.getInstance(context).getAdService().loadNextAd(AppLovinAdSize.INTERSTITIAL, new AppLovinAdLoadListener() {
             @Override
             public void adReceived(AppLovinAd ad) {
-                interstitialAd.showAndRender(ad);
+                loadedAd = ad;
                 listener.onSuccess();
             }
             @Override
@@ -55,6 +56,11 @@ public class AppLovin implements Adapter {
         });
     }
     @Override
+    public void showInterstitial(Context context, Listener listener) {
+        interstitialAd = AppLovinInterstitialAd.create( AppLovinSdk.getInstance(context), context);
+        interstitialAd.showAndRender(loadedAd);
+        listener.onSuccess();
+    }
     public void banner(Context context, ViewGroup container, AdSize adSize, Bundle params, Listener listener) {
         String zone_id = params.getString("ZONE_ID");
         AppLovinAdSize apAdSize = translateAdSize(adSize);
@@ -78,13 +84,40 @@ public class AppLovin implements Adapter {
         });
         adView.loadNextAd();
     }
+    @Override
+    public View createAdView(Context context, AdSize adSize, Bundle params) {
+        AppLovinAdView adView;
+        AppLovinAdSize apAdSize = translateAdSize(adSize);
+        if(params.containsKey("ZONE_ID"))
+            adView = new AppLovinAdView(apAdSize, params.getString("ZONE_ID"), context);
+        else
+            adView = new AppLovinAdView(apAdSize, context);
+        return adView;
+    }
+    @Override
+    public void loadAdView(View view, Listener listener){
+        AppLovinAdView adView = (AppLovinAdView) view;
+        adView.setAdLoadListener( new AppLovinAdLoadListener() {
+            @Override
+            public void adReceived(final AppLovinAd ad) {
+                Log.e("AppLovin", "??" + adView);
+                Log.e("AppLovin", ad.getType() + " did load ad: " + ad.getAdIdNumber());
+                listener.onSuccess();
+            }
+            @Override
+            public void failedToReceiveAd(final int errorCode) {
+                listener.onError("applovin banner fail due to errorcode:" + errorCode);
+            }
+        });
+        adView.loadNextAd();
+    }
     private AppLovinAdSize translateAdSize(AdSize adSize){
         switch(adSize){
         case SMALL:
             return AppLovinAdSize.BANNER;
-        case MEDIUM:
-            return AppLovinAdSize.LEADER;
         case LARGE:
+            return AppLovinAdSize.LEADER;
+        case RECTANGLE:
             return AppLovinAdSize.MREC;
         default:
             return null;
