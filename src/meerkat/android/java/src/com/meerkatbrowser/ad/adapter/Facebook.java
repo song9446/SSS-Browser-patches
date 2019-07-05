@@ -35,16 +35,16 @@ public class Facebook implements Adapter {
         switch(adsize){
         case SMALL:
             return com.facebook.ads.AdSize.BANNER_HEIGHT_50;
-        case MEDIUM:
-            return com.facebook.ads.AdSize.BANNER_HEIGHT_90;
         case LARGE:
+            return com.facebook.ads.AdSize.BANNER_HEIGHT_90;
+        case RECTANGLE:
             return com.facebook.ads.AdSize.RECTANGLE_HEIGHT_250;
         default:
             return null;
         }
     }
     @Override
-    public void interstitial(Context context, Bundle params, Listener listener) {
+    public void loadInterstitial(Context context, Bundle params, Listener listener) {
         interstitialAd = new InterstitialAd(context, params.getString("PLACEMENT_ID"));
         interstitialAd.setAdListener(new InterstitialAdListener() {
             @Override
@@ -59,11 +59,10 @@ public class Facebook implements Adapter {
             }
             @Override
             public void onAdLoaded(com.facebook.ads.Ad ad) {
-                if(!interstitialAd.isAdInvalidated()){
+                if(interstitialAd.isAdInvalidated()){
                     listener.onError("invalidate facebook ad");
                     return;
                 }
-                interstitialAd.show();
                 listener.onSuccess();
             }
             @Override
@@ -76,9 +75,38 @@ public class Facebook implements Adapter {
         interstitialAd.loadAd();
     }
     @Override
+    public void showInterstitial(Context context, Listener listener) {
+        interstitialAd.show();
+        listener.onSuccess();
+    }
     public void banner(Context context, ViewGroup container, AdSize adsize, Bundle params, Listener listener) {
         adView = new AdView(context, params.getString("PLACEMENT_ID"), translateAdSize(adsize));
         container.addView(adView);
+        adView.loadAd();
+    }
+    @Override
+    public View createAdView(Context context, AdSize adsize, Bundle params) {
+        return new AdView(context, params.getString("PLACEMENT_ID"), translateAdSize(adsize));
+    }
+    @Override
+    public void loadAdView(View view, Listener listener){
+        AdView adView = (AdView) view;
+        adView.setAdListener(new AdListener() {
+            @Override
+            public void onError(Ad ad, AdError adError) {
+                listener.onError("facebook banner fail due to: " + adError.getErrorMessage());
+            }
+            @Override
+            public void onAdLoaded(Ad ad) {
+                listener.onSuccess();
+            }
+            @Override
+            public void onAdClicked(Ad ad) {
+            }
+            @Override
+            public void onLoggingImpression(Ad ad) {
+            }
+        });
         adView.loadAd();
     }
 }

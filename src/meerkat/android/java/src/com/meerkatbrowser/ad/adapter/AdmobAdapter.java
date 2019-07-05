@@ -1,14 +1,19 @@
-import com.meerkatbrowser.ad.Adapter;
+package com.meerkatbrowser.ad.adapter;
+
+import com.meerkatbrowser.ad.adapter.Adapter;
 import com.meerkatbrowser.ad.Listener;
-import com.meerkatbrowser.ad.*;
+import com.meerkatbrowser.ad.AdSize;
 import android.os.Bundle;
 import android.util.Log;
-import com.facebook.ads.*;
-import android.context.Context;
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Gravity;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import com.google.android.gms.ads.MobileAds;
 
-class AdmobAdapter implement Adapter {
+class Admob implement Adapter {
     InterstitialAd interstitialAd;
     AdView adView;
     public void initialize(Context context, Bundle params, Listener listener) {
