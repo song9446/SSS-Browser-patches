@@ -85,33 +85,33 @@
          <!-- Browser Window Title Format -->
          <message name="IDS_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for titles displayed in tabs and popup windows">
 -          <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Chromium
-+          <ph name="PAGE_TITLE">$1<ex></ex></ph> - DodgeChrome
++          <ph name="PAGE_TITLE">$1<ex>DodgeChrome</ex></ph> - DodgeChrome
          </message>
        </if>
        <if expr="chromeos">
          <!-- Browser Window Title Format -->
          <message name="IDS_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for titles displayed in tabbed browser windows">
 -          Chromium - <ph name="PAGE_TITLE">$1<ex>Google</ex></ph>
-+          DodgeChrome - <ph name="PAGE_TITLE">$1<ex></ex></ph>
++          DodgeChrome - <ph name="PAGE_TITLE">$1<ex>DodgeChrome</ex></ph>
          </message>
        </if>
        <!-- Accessible window title format - includes the channel, and the same
             on all browser platforms rather than different on Chrome OS. -->
        <message name="IDS_ACCESSIBLE_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for the accessible name of a tabbed browser window">
 -        <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Chromium
-+        <ph name="PAGE_TITLE">$1<ex></ex></ph> - DodgeChrome
++        <ph name="PAGE_TITLE">$1<ex>DodgeChrome</ex></ph> - DodgeChrome
        </message>
        <message name="IDS_ACCESSIBLE_BETA_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for the accessible name of a tabbed browser window for the beta channel version of the browser">
 -        <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Chromium Beta
-+        <ph name="PAGE_TITLE">$1<ex></ex></ph> - DodgeChrome Beta
++        <ph name="PAGE_TITLE">$1<ex>DodgeChrome</ex></ph> - DodgeChrome Beta
        </message>
        <message name="IDS_ACCESSIBLE_DEV_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for the accessible name of a tabbed browser window for the developer (dev) channel version of the browser">
 -        <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Chromium Dev
-+        <ph name="PAGE_TITLE">$1<ex></ex></ph> - DodgeChrome Dev
++        <ph name="PAGE_TITLE">$1<ex>DodgeChrome</ex></ph> - DodgeChrome Dev
        </message>
        <message name="IDS_ACCESSIBLE_CANARY_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for the accessible name of a tabbed browser window for the canary (nightly build) channel version of the browser">
 -        <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Chromium Canary
-+        <ph name="PAGE_TITLE">$1<ex></ex></ph> - DodgeChrome Canary
++        <ph name="PAGE_TITLE">$1<ex>DodgeChrome</ex></ph> - DodgeChrome Canary
        </message>
        <if expr="not chromeos">
          <message name="IDS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
@@ -1536,281 +1536,46 @@
  chrome_public_test_manifest_package = "org.chromium.chrome.tests"
  
  chrome_public_jinja_variables =
---- a/chrome/android/java/monochrome_public_bundle__base_bundle_module.AndroidManifest.expected
-+++ b/chrome/android/java/monochrome_public_bundle__base_bundle_module.AndroidManifest.expected
-@@ -3 +3 @@
--    package="org.chromium.chrome"
-+    package="com.dodgechrome"
-@@ -17,3 +16,0 @@
--  <uses-permission android:name="org.chromium.chrome.permission.READ_WRITE_BOOKMARK_FOLDERS"/>
--  <uses-permission android:name="org.chromium.chrome.permission.C2D_MESSAGE"/>
--  <uses-permission android:name="org.chromium.chrome.TOS_ACKED"/>
-@@ -21,0 +19,3 @@
-+  <uses-permission android:name="com.dodgechrome.permission.READ_WRITE_BOOKMARK_FOLDERS"/>
-+  <uses-permission android:name="com.dodgechrome.permission.C2D_MESSAGE"/>
-+  <uses-permission android:name="com.dodgechrome.TOS_ACKED"/>
-@@ -60 +60 @@
--      android:name="org.chromium.chrome.permission.READ_WRITE_BOOKMARK_FOLDERS"
-+      android:name="com.dodgechrome.permission.READ_WRITE_BOOKMARK_FOLDERS"
-@@ -63 +63 @@
--      android:name="org.chromium.chrome.permission.CHILD_SERVICE"
-+      android:name="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -66 +66 @@
--      android:name="org.chromium.chrome.permission.C2D_MESSAGE"
-+      android:name="com.dodgechrome.permission.C2D_MESSAGE"
-@@ -68,3 +68 @@
--  <permission
--      android:name="org.chromium.chrome.TOS_ACKED"
--      android:protectionLevel="signatureOrSystem"/>
-+  <permission android:name="com.dodgechrome.TOS_ACKED" android:protectionLevel="signatureOrSystem"/>
-@@ -75 +73 @@
--      android:name="org.chromium.chrome.permission.DEBUG"
-+      android:name="com.dodgechrome.permission.DEBUG"
-@@ -262 +260 @@
--        <action android:name="org.chromium.chrome.ADDBOOKMARK"/>
-+        <action android:name="com.dodgechrome.ADDBOOKMARK"/>
-@@ -352 +350 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity0"
-+        android:taskAffinity="com.dodgechrome.webapps.WebApkActivity0"
-@@ -372 +370 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity1"
-+        android:taskAffinity="com.dodgechrome.webapps.WebApkActivity1"
-@@ -392 +390 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity2"
-+        android:taskAffinity="com.dodgechrome.webapps.WebApkActivity2"
-@@ -412 +410 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity3"
-+        android:taskAffinity="com.dodgechrome.webapps.WebApkActivity3"
-@@ -432 +430 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity4"
-+        android:taskAffinity="com.dodgechrome.webapps.WebApkActivity4"
-@@ -452 +450 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity5"
-+        android:taskAffinity="com.dodgechrome.webapps.WebApkActivity5"
-@@ -472 +470 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity6"
-+        android:taskAffinity="com.dodgechrome.webapps.WebApkActivity6"
-@@ -492 +490 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity7"
-+        android:taskAffinity="com.dodgechrome.webapps.WebApkActivity7"
-@@ -512 +510 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity8"
-+        android:taskAffinity="com.dodgechrome.webapps.WebApkActivity8"
-@@ -532 +530 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebApkActivity9"
-+        android:taskAffinity="com.dodgechrome.webapps.WebApkActivity9"
-@@ -552 +550 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebappActivity0"
-+        android:taskAffinity="com.dodgechrome.webapps.WebappActivity0"
-@@ -572 +570 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebappActivity1"
-+        android:taskAffinity="com.dodgechrome.webapps.WebappActivity1"
-@@ -592 +590 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebappActivity2"
-+        android:taskAffinity="com.dodgechrome.webapps.WebappActivity2"
-@@ -612 +610 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebappActivity3"
-+        android:taskAffinity="com.dodgechrome.webapps.WebappActivity3"
-@@ -632 +630 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebappActivity4"
-+        android:taskAffinity="com.dodgechrome.webapps.WebappActivity4"
-@@ -652 +650 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebappActivity5"
-+        android:taskAffinity="com.dodgechrome.webapps.WebappActivity5"
-@@ -672 +670 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebappActivity6"
-+        android:taskAffinity="com.dodgechrome.webapps.WebappActivity6"
-@@ -692 +690 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebappActivity7"
-+        android:taskAffinity="com.dodgechrome.webapps.WebappActivity7"
-@@ -712 +710 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebappActivity8"
-+        android:taskAffinity="com.dodgechrome.webapps.WebappActivity8"
-@@ -732 +730 @@
--        android:taskAffinity="org.chromium.chrome.webapps.WebappActivity9"
-+        android:taskAffinity="com.dodgechrome.webapps.WebappActivity9"
-@@ -766 +764 @@
--        android:taskAffinity="org.chromium.chrome.ChromeTabbedActivity2"
-+        android:taskAffinity="com.dodgechrome.ChromeTabbedActivity2"
-@@ -1174,0 +1173,15 @@
-+    <meta-data
-+        android:name="com.dodgechrome:privileged_process0.ignore_multidex"
-+        android:value="true"/>
-+    <meta-data
-+        android:name="com.dodgechrome:privileged_process1.ignore_multidex"
-+        android:value="true"/>
-+    <meta-data
-+        android:name="com.dodgechrome:privileged_process2.ignore_multidex"
-+        android:value="true"/>
-+    <meta-data
-+        android:name="com.dodgechrome:privileged_process3.ignore_multidex"
-+        android:value="true"/>
-+    <meta-data
-+        android:name="com.dodgechrome:privileged_process4.ignore_multidex"
-+        android:value="true"/>
-@@ -1194,15 +1206,0 @@
--        android:name="org.chromium.chrome:privileged_process0.ignore_multidex"
--        android:value="true"/>
--    <meta-data
--        android:name="org.chromium.chrome:privileged_process1.ignore_multidex"
--        android:value="true"/>
--    <meta-data
--        android:name="org.chromium.chrome:privileged_process2.ignore_multidex"
--        android:value="true"/>
--    <meta-data
--        android:name="org.chromium.chrome:privileged_process3.ignore_multidex"
--        android:value="true"/>
--    <meta-data
--        android:name="org.chromium.chrome:privileged_process4.ignore_multidex"
--        android:value="true"/>
--    <meta-data
-@@ -1221 +1219 @@
--        android:authorities="org.chromium.chrome.ChromeBrowserProvider;org.chromium.chrome.browser;org.chromium.chrome"
-+        android:authorities="com.dodgechrome.ChromeBrowserProvider;com.dodgechrome.browser;com.dodgechrome"
-@@ -1229 +1227 @@
--        android:authorities="org.chromium.chrome.DownloadFileProvider"
-+        android:authorities="com.dodgechrome.DownloadFileProvider"
-@@ -1238 +1236 @@
--        android:authorities="org.chromium.chrome.FileProvider"
-+        android:authorities="com.dodgechrome.FileProvider"
-@@ -1247 +1245 @@
--        android:authorities="org.chromium.chrome.LicenseContentProvider"
-+        android:authorities="com.dodgechrome.LicenseContentProvider"
-@@ -1325 +1323 @@
--        <category android:name="org.chromium.chrome"/>
-+        <category android:name="com.dodgechrome"/>
-@@ -1400 +1398 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1406 +1404 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1412 +1410 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1418 +1416 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1424 +1422 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1577 +1575 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1586 +1584 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1595 +1593 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1604 +1602 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1613 +1611 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1622 +1620 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1631 +1629 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1640 +1638 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1649 +1647 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1658 +1656 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1667 +1665 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1676 +1674 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1685 +1683 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1694 +1692 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1703 +1701 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1712 +1710 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1721 +1719 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1730 +1728 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1739 +1737 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1748 +1746 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1757 +1755 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1766 +1764 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1775 +1773 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1784 +1782 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1793 +1791 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1802 +1800 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1811 +1809 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1820 +1818 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1829 +1827 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1838 +1836 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1847 +1845 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1856 +1854 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1865 +1863 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1874 +1872 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1883 +1881 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1892 +1890 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1901 +1899 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1910 +1908 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1919 +1917 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
-@@ -1928 +1926 @@
--        android:permission="org.chromium.chrome.permission.CHILD_SERVICE"
-+        android:permission="com.dodgechrome.permission.CHILD_SERVICE"
+
+diff --git a/chrome/app/theme/chromium/BRANDING b/chrome/app/theme/chromium/BRANDING
+index 26918a105c..9d00153b55 100644
+--- a/chrome/app/theme/chromium/BRANDING
++++ b/chrome/app/theme/chromium/BRANDING
+@@ -1,10 +1,10 @@
+-COMPANY_FULLNAME=The Chromium Authors
+-COMPANY_SHORTNAME=The Chromium Authors
+-PRODUCT_FULLNAME=Chromium
+-PRODUCT_SHORTNAME=Chromium
+-PRODUCT_INSTALLER_FULLNAME=Chromium Installer
+-PRODUCT_INSTALLER_SHORTNAME=Chromium Installer
+-COPYRIGHT=Copyright 2019 The Chromium Authors. All rights reserved.
+-MAC_BUNDLE_ID=org.chromium.Chromium
++COMPANY_FULLNAME=The Plunger Authors
++COMPANY_SHORTNAME=The Plunger Authors
++PRODUCT_FULLNAME=Plunger
++PRODUCT_SHORTNAME=Plunger
++PRODUCT_INSTALLER_FULLNAME=Plunger Installer
++PRODUCT_INSTALLER_SHORTNAME=Plunger Installer
++COPYRIGHT=Copyright 2019 The Plunger Authors. All rights reserved.
++MAC_BUNDLE_ID=org.plunger.Plunger
+ MAC_CREATOR_CODE=Cr24
+ MAC_TEAM_ID=
+diff --git a/chrome/common/chrome_constants.cc b/chrome/common/chrome_constants.cc
+index a5059c952e..a5ce6c3314 100644
+--- a/chrome/common/chrome_constants.cc
++++ b/chrome/common/chrome_constants.cc
+@@ -10,11 +10,11 @@
+ #define FPL FILE_PATH_LITERAL
+ 
+ #if defined(OS_MACOSX)
+-#define CHROMIUM_PRODUCT_STRING "Chromium"
++#define CHROMIUM_PRODUCT_STRING "DodgeChrome"
+ #if defined(GOOGLE_CHROME_BUILD)
+ #define PRODUCT_STRING "Google Chrome"
+ #elif defined(CHROMIUM_BUILD)
+-#define PRODUCT_STRING "Chromium"
++#define PRODUCT_STRING "DodgeChrome"
+ #else
+ #error Unknown branding
+ #endif
+ 
