@@ -1462,11 +1462,11 @@
    </release>
 --- a/chrome/test/chromedriver/chrome/chrome_finder.cc
 +++ b/chrome/test/chromedriver/chrome/chrome_finder.cc
-@@ -94,15 +94,12 @@
+@@ -94,15 +94,13 @@
  bool FindChrome(base::FilePath* browser_exe) {
    base::FilePath browser_exes_array[] = {
  #if defined(OS_WIN)
--      base::FilePath(L"chrome.exe")
+       base::FilePath(L"chrome.exe")
 +      base::FilePath(L"dodgechrome.exe")
  #elif defined(OS_MACOSX)
 -      base::FilePath("Google Chrome.app/Contents/MacOS/Google Chrome"),
@@ -1550,15 +1550,15 @@ index 26918a105c..9d00153b55 100644
 -PRODUCT_INSTALLER_SHORTNAME=Chromium Installer
 -COPYRIGHT=Copyright 2019 The Chromium Authors. All rights reserved.
 -MAC_BUNDLE_ID=org.chromium.Chromium
-+COMPANY_FULLNAME=The Plunger Authors
-+COMPANY_SHORTNAME=The Plunger Authors
-+PRODUCT_FULLNAME=Plunger
-+PRODUCT_SHORTNAME=Plunger
-+PRODUCT_INSTALLER_FULLNAME=Plunger Installer
-+PRODUCT_INSTALLER_SHORTNAME=Plunger Installer
-+COPYRIGHT=Copyright 2019 The Plunger Authors. All rights reserved.
-+MAC_BUNDLE_ID=org.plunger.Plunger
- MAC_CREATOR_CODE=Cr24
++COMPANY_FULLNAME=The DodgeChrome Authors
++COMPANY_SHORTNAME=The DodgeChrome Authors
++PRODUCT_FULLNAME=DodgeChrome
++PRODUCT_SHORTNAME=DodgeChrome
++PRODUCT_INSTALLER_FULLNAME=DodgeChrome Installer
++PRODUCT_INSTALLER_SHORTNAME=DodgeChrome Installer
++COPYRIGHT=Copyright 2019 The DodgeChrome Authors. All rights reserved.
++MAC_BUNDLE_ID=com.dodgechrome
+ MAC_CREATOR_CODE=DC24
  MAC_TEAM_ID=
 diff --git a/chrome/common/chrome_constants.cc b/chrome/common/chrome_constants.cc
 index a5059c952e..a5ce6c3314 100644
@@ -1578,4 +1578,42 @@ index a5059c952e..a5ce6c3314 100644
  #else
  #error Unknown branding
  #endif
+diff --git a/chrome/install_static/chromium_install_modes.cc b/chrome/install_static/chromium_install_modes.cc
+index ae706e780b..c717620040 100644
+--- a/chrome/install_static/chromium_install_modes.cc
++++ b/chrome/install_static/chromium_install_modes.cc
+@@ -16,16 +16,16 @@ namespace install_static {
  
+ const wchar_t kCompanyPathName[] = L"";
+ 
+-const wchar_t kProductPathName[] = L"Chromium";
++const wchar_t kProductPathName[] = L"DodgeChrome";
+ 
+ const size_t kProductPathNameLength = _countof(kProductPathName) - 1;
+ 
+ // No integration with Google Update, so no app GUID.
+ const wchar_t kBinariesAppGuid[] = L"";
+ 
+-const wchar_t kBinariesPathName[] = L"Chromium Binaries";
++const wchar_t kBinariesPathName[] = L"DodgeChrome Binaries";
+ 
+-const char kSafeBrowsingName[] = "chromium";
++const char kSafeBrowsingName[] = "dodgechrome";
+ 
+ const InstallConstants kInstallModes[] = {
+     // The primary (and only) install mode for Chromium.
+@@ -36,10 +36,10 @@ const InstallConstants kInstallModes[] = {
+         L"",             // Empty install_suffix for the primary install mode.
+         L"",             // No logo suffix for the primary install mode.
+         L"",          // Empty app_guid since no integraion with Google Update.
+-        L"Chromium",  // A distinct base_app_name.
+-        L"Chromium",  // A distinct base_app_id.
+-        L"ChromiumHTM",                             // ProgID prefix.
+-        L"Chromium HTML Document",                  // ProgID description.
++        L"DodgeChrome",  // A distinct base_app_name.
++        L"DodgeChrome",  // A distinct base_app_id.
++        L"DodgeChromeHTM",                             // ProgID prefix.
++        L"DodgeChrome HTML Document",                  // ProgID description.
+         L"{7D2B3E1D-D096-4594-9D8F-A6667F12E0AC}",  // Active Setup GUID.
+         L"{A2DF06F9-A21A-44A8-8A99-8B9C84F29160}",  // CommandExecuteImpl CLSID.
+         {0x635EFA6F,
