@@ -25,7 +25,7 @@ diff --git a/net/dns/dns_config.cc b/net/dns/dns_config.cc
 index b3fe56a02e9b..7b47eee0cfa2 100644
 --- a/net/dns/dns_config.cc
 +++ b/net/dns/dns_config.cc
-@@ -20,7 +20,13 @@ DnsConfig::DnsConfig()
+@@ -27,5 +27,11 @@ DnsConfig::DnsConfig()
        timeout(kDnsDefaultTimeout),
        attempts(2),
        rotate(false),
@@ -37,5 +37,3 @@ index b3fe56a02e9b..7b47eee0cfa2 100644
 +              {"https://dns.adguard.com/dns-query", true}
 +              }),
        secure_dns_mode(SecureDnsMode::OFF) {}
- 
- DnsConfig::DnsConfig(const DnsConfig& other) = default;
